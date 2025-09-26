@@ -61,8 +61,8 @@ local function render_file_selection()
     local staged = status:sub(1,1)
     local unstaged = status:sub(2,2)
 
-    if staged == "A" or unstaged == "A" then
-      status_symbol = "[+]"  -- Added
+    if staged == "A" or unstaged == "A" or status == "??" then
+      status_symbol = "[+]"  -- Added or New/Untracked
     elseif staged == "D" or unstaged == "D" then
       status_symbol = "[-]"  -- Deleted
     elseif staged == "M" or unstaged == "M" then
@@ -71,8 +71,6 @@ local function render_file_selection()
       status_symbol = "[R]"  -- Renamed
     elseif staged == "C" then
       status_symbol = "[C]"  -- Copied
-    elseif status == "??" then
-      status_symbol = "[?]"  -- Untracked
     else
       status_symbol = "[?]"  -- Unknown
     end
@@ -107,7 +105,7 @@ local function render_file_selection()
     local unstaged = status:sub(2,2)
     local status_color
 
-    if staged == "A" or unstaged == "A" then
+    if staged == "A" or unstaged == "A" or status == "??" then
       status_color = 'ConventionalPushGreen'
     elseif staged == "D" or unstaged == "D" then
       status_color = 'ConventionalPushRed'
@@ -117,7 +115,7 @@ local function render_file_selection()
       status_color = 'ConventionalPushWhite'
     end
 
-    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 8)
+    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 7)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -153,8 +151,8 @@ local function render_confirmation()
       local staged = status:sub(1,1)
       local unstaged = status:sub(2,2)
 
-      if staged == "A" or unstaged == "A" then
-        status_symbol = "[+]"  -- Added
+      if staged == "A" or unstaged == "A" or status == "??" then
+        status_symbol = "[+]"  -- Added or New/Untracked
       elseif staged == "D" or unstaged == "D" then
         status_symbol = "[-]"  -- Deleted
       elseif staged == "M" or unstaged == "M" then
@@ -163,8 +161,6 @@ local function render_confirmation()
         status_symbol = "[R]"  -- Renamed
       elseif staged == "C" then
         status_symbol = "[C]"  -- Copied
-      elseif status == "??" then
-        status_symbol = "[?]"  -- Untracked
       else
         status_symbol = "[?]"  -- Unknown
       end
@@ -198,7 +194,7 @@ local function render_confirmation()
       local unstaged = status:sub(2,2)
       local status_color
 
-      if staged == "A" or unstaged == "A" then
+      if staged == "A" or unstaged == "A" or status == "??" then
         status_color = 'ConventionalPushGreen'
       elseif staged == "D" or unstaged == "D" then
         status_color = 'ConventionalPushRed'
@@ -207,7 +203,7 @@ local function render_confirmation()
       else
         status_color = 'ConventionalPushWhite'
       end
-      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 8)
+      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 7)
 
       line_num = line_num + 1
     end
