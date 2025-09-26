@@ -14,6 +14,13 @@ All in a single, interactive workflow without leaving Neovim. Perfect for develo
 ## Features
 
 - **Interactive File Selection**: Visual interface to select which changed files to commit
+- **Git Status Indicators**: Visual status indicators with colors for file changes:
+  - `+` (green) for added files
+  - `-` (red) for deleted files
+  - `●` (yellow) for modified files
+  - `↻` (yellow) for renamed files
+  - `©` (yellow) for copied files
+  - `?` (white) for untracked files
 - **Conventional Commits**: Built-in support for conventional commit prefixes
 - **User-Friendly Interface**: Navigate with vim-like keybindings
 - **Automatic Push**: Option to push commits immediately after creation

@@ -52,10 +52,40 @@ local function render_file_selection()
     "  Select All"
   }
 
-  -- Add files without blank line
+  -- Add files with status indicators
   for _, file in ipairs(state.files) do
-    local icon = file.selected and "✓" or "✗"
-    local line = string.format("  %s %s", icon, file.path)
+    local select_icon = file.selected and "✓" or "✗"
+
+    -- Parse git status and create status indicator
+    local status_char = file.status:sub(1, 1)  -- First character of git status
+    local status_symbol, status_bracket
+
+    if status_char == 'A' then
+      status_symbol = "+"  -- Added: green plus
+      status_bracket = "[A]"
+    elseif status_char == 'D' then
+      status_symbol = "-"  -- Deleted: red minus
+      status_bracket = "[D]"
+    elseif status_char == 'M' then
+      status_symbol = "●"  -- Modified: yellow circle
+      status_bracket = "[M]"
+    elseif status_char == 'R' then
+      status_symbol = "↻"  -- Renamed: yellow curved arrow
+      status_bracket = "[R]"
+    elseif status_char == 'C' then
+      status_symbol = "©"  -- Copied: yellow copyright
+      status_bracket = "[C]"
+    elseif status_char == '?' then
+      status_symbol = "?"  -- Untracked: white question mark
+      status_bracket = "[?]"
+    else
+      status_symbol = "?"
+      status_bracket = "[?]"
+    end
+
+    -- Try Unicode symbols first, fallback to brackets
+    local status_display = status_symbol or status_bracket
+    local line = string.format("  %s %s %s", select_icon, status_display, file.path)
     table.insert(lines, line)
   end
 
@@ -70,6 +100,7 @@ local function render_file_selection()
   vim.api.nvim_set_hl(0, 'ConventionalPushYellow', { ctermfg = 226 })
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushWhite', { ctermfg = 15 })
 
   -- Light gray for guide text
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 1, 0, -1)
@@ -78,11 +109,29 @@ local function render_file_selection()
   -- Yellow for Select All
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushYellow', 4, 2, -1)
 
-  -- Color file icons
+  -- Color file selection icons and status indicators
   for i, file in ipairs(state.files) do
     local line_idx = 4 + i  -- Line 5 (index 4) is "Select All", files start at line 6 (index 5)
-    local color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
-    vim.api.nvim_buf_add_highlight(state.buf, -1, color, line_idx, 2, 3)
+
+    -- Color selection icon (checkmark/X)
+    local select_color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
+    vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 3)
+
+    -- Color status indicator
+    local status_char = file.status:sub(1, 1)
+    local status_color
+    if status_char == 'A' then
+      status_color = 'ConventionalPushGreen'  -- Added: green
+    elseif status_char == 'D' then
+      status_color = 'ConventionalPushRed'    -- Deleted: red
+    elseif status_char == 'M' or status_char == 'R' or status_char == 'C' then
+      status_color = 'ConventionalPushYellow' -- Modified/Renamed/Copied: yellow
+    else
+      status_color = 'ConventionalPushWhite'  -- Untracked/Unknown: white
+    end
+
+    -- Highlight status indicator (starts at position 4, after "✓ " or "✗ ")
+    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 5)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -112,7 +161,25 @@ local function render_confirmation()
 
   for _, file in ipairs(state.files) do
     if file.selected then
-      table.insert(lines, "  ✓ " .. file.path)
+      -- Add status indicator to confirmation screen too
+      local status_char = file.status:sub(1, 1)
+      local status_symbol
+
+      if status_char == 'A' then
+        status_symbol = "+"
+      elseif status_char == 'D' then
+        status_symbol = "-"
+      elseif status_char == 'M' then
+        status_symbol = "●"
+      elseif status_char == 'R' then
+        status_symbol = "↻"
+      elseif status_char == 'C' then
+        status_symbol = "©"
+      else
+        status_symbol = "?"
+      end
+
+      table.insert(lines, "  ✓ " .. status_symbol .. " " .. file.path)
     end
   end
 
@@ -123,17 +190,36 @@ local function render_confirmation()
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGreen', { ctermfg = 46 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushRed', { ctermfg = 196 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushYellow', { ctermfg = 226 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushWhite', { ctermfg = 15 })
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
   -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
-  -- Add green color to checkmarks
+  -- Add green color to checkmarks and colored status indicators
   local line_num = 3
   for _, file in ipairs(state.files) do
     if file.selected then
+      -- Color checkmark
       vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
+
+      -- Color status indicator
+      local status_char = file.status:sub(1, 1)
+      local status_color
+      if status_char == 'A' then
+        status_color = 'ConventionalPushGreen'
+      elseif status_char == 'D' then
+        status_color = 'ConventionalPushRed'
+      elseif status_char == 'M' or status_char == 'R' or status_char == 'C' then
+        status_color = 'ConventionalPushYellow'
+      else
+        status_color = 'ConventionalPushWhite'
+      end
+      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 5)
+
       line_num = line_num + 1
     end
   end
