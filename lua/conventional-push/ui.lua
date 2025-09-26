@@ -36,7 +36,6 @@ local function create_window()
   local win = vim.api.nvim_open_win(buf, true, opts)
   vim.api.nvim_win_set_option(win, 'cursorline', true)
 
-  -- Set up highlight for cursorline with subtle background
   vim.cmd('highlight ConventionalPushCursorLine ctermbg=236')
   vim.api.nvim_win_set_option(win, 'winhl', 'CursorLine:ConventionalPushCursorLine')
 
@@ -52,44 +51,32 @@ local function render_file_selection()
     "  Select All"
   }
 
-  -- Add files with status indicators
   for _, file in ipairs(state.files) do
     local select_icon = file.selected and "✓" or "✗"
 
-    -- Parse git status and create status indicator
-    local status_char = file.status:sub(1, 1)  -- First character of git status
-    local status_symbol, status_bracket
+    local status_char = file.status:sub(1, 1)
+    local status_symbol
 
     if status_char == 'A' then
-      status_symbol = "+"  -- Added: green plus
-      status_bracket = "[A]"
+      status_symbol = "+"
     elseif status_char == 'D' then
-      status_symbol = "-"  -- Deleted: red minus
-      status_bracket = "[D]"
+      status_symbol = "-"
     elseif status_char == 'M' then
-      status_symbol = "●"  -- Modified: yellow circle
-      status_bracket = "[M]"
+      status_symbol = "●"
     elseif status_char == 'R' then
-      status_symbol = "↻"  -- Renamed: yellow curved arrow
-      status_bracket = "[R]"
+      status_symbol = "↻"
     elseif status_char == 'C' then
-      status_symbol = "©"  -- Copied: yellow copyright
-      status_bracket = "[C]"
+      status_symbol = "©"
     elseif status_char == '?' then
-      status_symbol = "?"  -- Untracked: white question mark
-      status_bracket = "[?]"
+      status_symbol = "?"
     else
       status_symbol = "?"
-      status_bracket = "[?]"
     end
 
-    -- Try Unicode symbols first, fallback to brackets
-    local status_display = status_symbol or status_bracket
-    local line = string.format("  %s %s %s", select_icon, status_display, file.path)
+    local line = string.format("  %s %s %s", select_icon, status_symbol, file.path)
     table.insert(lines, line)
   end
 
-  -- Store current cursor position
   local current_row = vim.api.nvim_win_get_cursor(state.win)[1]
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
@@ -102,41 +89,32 @@ local function render_file_selection()
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
   vim.api.nvim_set_hl(0, 'ConventionalPushWhite', { ctermfg = 15 })
 
-  -- Light gray for guide text
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 1, 0, -1)
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 2, 0, -1)
-
-  -- Yellow for Select All
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushYellow', 4, 2, -1)
 
-  -- Color file selection icons and status indicators
   for i, file in ipairs(state.files) do
-    local line_idx = 4 + i  -- Line 5 (index 4) is "Select All", files start at line 6 (index 5)
-
-    -- Color selection icon (checkmark/X)
+    local line_idx = 4 + i
     local select_color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
     vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 3)
 
-    -- Color status indicator
     local status_char = file.status:sub(1, 1)
     local status_color
     if status_char == 'A' then
-      status_color = 'ConventionalPushGreen'  -- Added: green
+      status_color = 'ConventionalPushGreen'
     elseif status_char == 'D' then
-      status_color = 'ConventionalPushRed'    -- Deleted: red
+      status_color = 'ConventionalPushRed'
     elseif status_char == 'M' or status_char == 'R' or status_char == 'C' then
-      status_color = 'ConventionalPushYellow' -- Modified/Renamed/Copied: yellow
+      status_color = 'ConventionalPushYellow'
     else
-      status_color = 'ConventionalPushWhite'  -- Untracked/Unknown: white
+      status_color = 'ConventionalPushWhite'
     end
 
-    -- Highlight status indicator (starts at position 4, after "✓ " or "✗ ")
     vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 5)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
 
-  -- Restore cursor position if valid, otherwise set to Select All
   if current_row >= 5 and current_row <= (5 + #state.files) then
     vim.api.nvim_win_set_cursor(state.win, {current_row, 0})
   else
@@ -161,7 +139,6 @@ local function render_confirmation()
 
   for _, file in ipairs(state.files) do
     if file.selected then
-      -- Add status indicator to confirmation screen too
       local status_char = file.status:sub(1, 1)
       local status_symbol
 
@@ -196,17 +173,13 @@ local function render_confirmation()
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
-  -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
-  -- Add green color to checkmarks and colored status indicators
   local line_num = 3
   for _, file in ipairs(state.files) do
     if file.selected then
-      -- Color checkmark
       vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
 
-      -- Color status indicator
       local status_char = file.status:sub(1, 1)
       local status_color
       if status_char == 'A' then
@@ -224,7 +197,6 @@ local function render_confirmation()
     end
   end
 
-  -- Light gray for instructions
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', line_num + 1, 0, -1)
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -252,10 +224,7 @@ local function render_prefix_selection()
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
-  -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
-
-  -- Light gray for instructions
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 3 + #prefixes + 1, 0, -1)
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -280,14 +249,10 @@ local function render_message_input()
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
-  -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
-
-  -- Light gray for instructions
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 5, 0, -1)
 
-  -- Store prefix length for protection
-  state.prefix_length = string.len(prefix_text) + 2  -- +2 for the two spaces
+  state.prefix_length = string.len(prefix_text) + 2
 
   local prefix_len = state.prefix_length
   vim.api.nvim_win_set_cursor(state.win, {4, prefix_len})
@@ -311,9 +276,7 @@ local function render_push_confirmation()
   vim.api.nvim_set_hl(0, 'ConventionalPushRed', { ctermfg = 196 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
-  -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
-
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', 3, 2, -1)
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushRed', 4, 2, -1)
 
@@ -348,10 +311,8 @@ local function render_final_summary(push_result)
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
   vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
-  -- Blue header
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
-  -- Light gray for instructions
   local last_line = #lines - 1
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', last_line, 0, -1)
 
@@ -364,17 +325,14 @@ local function handle_file_selection_action(action)
 
   if row == 5 then
     if action == 'a' then
-      -- Select all files
       for _, file in ipairs(state.files) do
         file.selected = true
       end
     elseif action == 'd' then
-      -- Deselect all files
       for _, file in ipairs(state.files) do
         file.selected = false
       end
     elseif action == 't' then
-      -- Toggle all files
       local all_selected = true
       for _, file in ipairs(state.files) do
         if not file.selected then
@@ -390,7 +348,7 @@ local function handle_file_selection_action(action)
     return
   end
 
-  local file_index = row - 5  -- Row 5 is "Select All", row 6+ are files
+  local file_index = row - 5
   if file_index > 0 and file_index <= #state.files then
     local file = state.files[file_index]
     if action == 'a' then
@@ -543,7 +501,7 @@ local function setup_keymaps()
   map('n', 'j', function()
     if state.mode == "file_selection" then
       local cursor = vim.api.nvim_win_get_cursor(state.win)
-      local max_line = 5 + #state.files  -- Select All at 5, files from 6 onwards
+      local max_line = 5 + #state.files
       if cursor[1] < max_line then
         vim.api.nvim_win_set_cursor(state.win, {cursor[1] + 1, 0})
       end
@@ -594,7 +552,6 @@ local function setup_keymaps()
     render_prefix_selection()
   end)
 
-  -- Prevent deleting the prefix in insert mode
   map('i', '<BS>', function()
     if state.mode == "message_input" then
       local cursor = vim.api.nvim_win_get_cursor(state.win)
