@@ -9,7 +9,8 @@ local state = {
   selected_files = {},
   selected_prefix = nil,
   commit_message = "",
-  ns_id = nil
+  ns_id = nil,
+  prefix_length = 0
 }
 
 local function create_window()
@@ -50,28 +51,42 @@ local function render_file_selection()
 
   for _, file in ipairs(state.files) do
     local icon = file.selected and "✓" or "✗"
-    local icon_color = file.selected and "green" or "red"
     local line = string.format("  %s %s", icon, file.path)
     table.insert(lines, line)
   end
+
+  -- Store current cursor position
+  local current_row = vim.api.nvim_win_get_cursor(state.win)[1]
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGreen', { ctermfg = 46 })
   vim.api.nvim_set_hl(0, 'ConventionalPushRed', { ctermfg = 196 })
-  vim.api.nvim_set_hl(0, 'ConventionalPushAzure', { ctermfg = 33 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushYellow', { ctermfg = 226 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
 
-  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushAzure', 4, 2, -1)
+  -- Light gray for guide text
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 1, 0, -1)
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 2, 0, -1)
+
+  -- Yellow for Select All
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushYellow', 4, 2, -1)
 
   for i, file in ipairs(state.files) do
-    local line_idx = 5 + i
+    local line_idx = 6 + i - 1  -- Fixed off-by-one
     local color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
     vim.api.nvim_buf_add_highlight(state.buf, -1, color, line_idx, 2, 3)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
-  vim.api.nvim_win_set_cursor(state.win, {5, 0})
+
+  -- Restore cursor position if valid, otherwise set to Select All
+  if current_row >= 5 and current_row <= (6 + #state.files - 1) then
+    vim.api.nvim_win_set_cursor(state.win, {current_row, 0})
+  else
+    vim.api.nvim_win_set_cursor(state.win, {5, 0})
+  end
 end
 
 local function render_confirmation()
@@ -82,15 +97,16 @@ local function render_confirmation()
     end
   end
 
+  local file_word = selected_count == 1 and "file" or "files"
   local lines = {
     "",
-    "  Confirm you want to commit following " .. selected_count .. " files:",
+    "  Confirm you want to commit following " .. selected_count .. " " .. file_word .. ":",
     ""
   }
 
   for _, file in ipairs(state.files) do
     if file.selected then
-      table.insert(lines, "  " .. file.path)
+      table.insert(lines, "  ✓ " .. file.path)
     end
   end
 
@@ -99,6 +115,22 @@ local function render_confirmation()
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+
+  vim.api.nvim_set_hl(0, 'ConventionalPushGreen', { ctermfg = 46 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+
+  -- Add green color to checkmarks
+  local line_num = 3
+  for _, file in ipairs(state.files) do
+    if file.selected then
+      vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
+      line_num = line_num + 1
+    end
+  end
+
+  -- Light gray for instructions
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', line_num + 1, 0, -1)
+
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
 end
 
@@ -120,17 +152,24 @@ local function render_prefix_selection()
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+
+  vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+
+  -- Light gray for instructions
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 3 + #prefixes + 1, 0, -1)
+
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
 
   vim.api.nvim_win_set_cursor(state.win, {4, 0})
 end
 
 local function render_message_input()
+  local prefix_text = state.selected_prefix .. ": "
   local lines = {
     "",
     "  Enter commit message:",
     "",
-    "  " .. state.selected_prefix .. ": ",
+    "  " .. prefix_text,
     "",
     "  Press Enter to commit, Escape to go back"
   }
@@ -138,9 +177,17 @@ local function render_message_input()
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
-  local prefix_len = string.len(state.selected_prefix) + 4
+  vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+
+  -- Light gray for instructions
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 5, 0, -1)
+
+  -- Store prefix length for protection
+  state.prefix_length = string.len(prefix_text) + 2  -- +2 for the two spaces
+
+  local prefix_len = state.prefix_length
   vim.api.nvim_win_set_cursor(state.win, {4, prefix_len})
-  vim.cmd('startinsert')
+  vim.cmd('startinsert!')
 end
 
 local function render_push_confirmation()
@@ -189,6 +236,13 @@ local function render_final_summary(push_result)
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', true)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+
+  vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+
+  -- Light gray for instructions
+  local last_line = #lines - 1
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', last_line, 0, -1)
+
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
 end
 
@@ -206,7 +260,7 @@ local function handle_file_selection_action(action)
     return
   end
 
-  local file_index = row - 5
+  local file_index = row - 5  -- Now correctly maps to file index
   if file_index > 0 and file_index <= #state.files then
     local file = state.files[file_index]
     if action == 'a' then
@@ -359,7 +413,7 @@ local function setup_keymaps()
   map('n', 'j', function()
     if state.mode == "file_selection" then
       local cursor = vim.api.nvim_win_get_cursor(state.win)
-      local max_line = 5 + #state.files
+      local max_line = 6 + #state.files - 1  -- Fixed to match new indexing
       if cursor[1] < max_line then
         vim.api.nvim_win_set_cursor(state.win, {cursor[1] + 1, 0})
       end
@@ -409,6 +463,27 @@ local function setup_keymaps()
     state.mode = "prefix_selection"
     render_prefix_selection()
   end)
+
+  -- Prevent deleting the prefix in insert mode
+  map('i', '<BS>', function()
+    if state.mode == "message_input" then
+      local cursor = vim.api.nvim_win_get_cursor(state.win)
+      if cursor[2] <= state.prefix_length then
+        return
+      end
+    end
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<BS>', true, false, true), 'n', false)
+  end)
+
+  map('i', '<Left>', function()
+    if state.mode == "message_input" then
+      local cursor = vim.api.nvim_win_get_cursor(state.win)
+      if cursor[2] <= state.prefix_length then
+        return
+      end
+    end
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Left>', true, false, true), 'n', false)
+  end)
 end
 
 M.start = function()
@@ -441,6 +516,7 @@ M.close = function()
   state.selected_files = {}
   state.selected_prefix = nil
   state.commit_message = ""
+  state.prefix_length = 0
 end
 
 return M
