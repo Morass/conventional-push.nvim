@@ -52,7 +52,7 @@ local function render_file_selection()
   }
 
   for _, file in ipairs(state.files) do
-    local select_icon = file.selected and "✓" or "✗"
+    local select_icon = file.selected and "+" or "x"
 
     local status = file.status
     local status_symbol
@@ -115,7 +115,7 @@ local function render_file_selection()
       status_color = 'ConventionalPushWhite'
     end
 
-    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 7)
+    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 8)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -165,7 +165,7 @@ local function render_confirmation()
         status_symbol = "[?]"  -- Unknown
       end
 
-      table.insert(lines, "  ✓ " .. status_symbol .. " " .. file.path)
+      table.insert(lines, "  + " .. status_symbol .. " " .. file.path)
     end
   end
 
@@ -203,7 +203,7 @@ local function render_confirmation()
       else
         status_color = 'ConventionalPushWhite'
       end
-      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 7)
+      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 8)
 
       line_num = line_num + 1
     end
