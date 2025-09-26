@@ -2,6 +2,15 @@
 
 A Neovim plugin that provides an interactive interface for making conventional commits with file selection and automatic git push functionality.
 
+## What is this plugin about?
+
+This plugin is designed to **streamline your git workflow** by providing a simple, visual way to:
+- **Add** changed files to staging area
+- **Commit** with conventional commit messages
+- **Push** to remote repository
+
+All in a single, interactive workflow without leaving Neovim. Perfect for developers who want a quick, consistent, and foolproof way to commit and push their changes following conventional commit standards.
+
 ## Features
 
 - **Interactive File Selection**: Visual interface to select which changed files to commit
@@ -151,10 +160,24 @@ The plugin provides clear error messages for common scenarios:
 
 ## Similar Projects
 
-- [vim-fugitive](https://github.com/tpope/vim-fugitive) - Comprehensive git integration for Vim
-- [lazygit.nvim](https://github.com/kdheepak/lazygit.nvim) - Lazygit integration for Neovim
-- [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) - Git integration with signs and hunks
-- [neogit](https://github.com/TimUntersberger/neogit) - Magit clone for Neovim
+### Conventional Commit Tools
+- [telescope-cc.nvim](https://github.com/olacin/telescope-cc.nvim) - Telescope integration for conventional commits
+- [cmp-conventionalcommits](https://github.com/davidsierradz/cmp-conventionalcommits) - nvim-cmp source for conventional commit autocomplete
+- [Commitizen CLI](https://github.com/commitizen/cz-cli) - Command line tool for conventional commits
+- [Commitizen Tools](https://github.com/commitizen-tools/commitizen) - Python tool for conventional commits with version bumping
+
+### General Git Integrations
+- [vim-fugitive](https://github.com/tpope/vim-fugitive) - Comprehensive git wrapper for Vim
+- [neogit](https://github.com/NeogitOrg/neogit) - Magit clone for Neovim
+- [lazygit.nvim](https://github.com/kdheepak/lazygit.nvim) - Lazygit terminal UI integration
+- [gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim) - Git decorations and hunk operations
+
+### Key Differences
+This plugin focuses specifically on the **Add → Commit → Push** pipeline with an emphasis on:
+- Interactive file selection in a popup window
+- Built-in conventional commit prefix selection
+- Streamlined workflow from file changes to remote push
+- No external dependencies (works with just git)
 
 ## Requirements
 
