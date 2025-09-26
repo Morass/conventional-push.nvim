@@ -277,12 +277,30 @@ local function handle_file_selection_action(action)
   local row = cursor[1]
 
   if row == 5 then
-    if action == 'a' or action == 't' then
+    if action == 'a' then
+      -- Select all files
       for _, file in ipairs(state.files) do
         file.selected = true
       end
-      render_file_selection()
+    elseif action == 'd' then
+      -- Deselect all files
+      for _, file in ipairs(state.files) do
+        file.selected = false
+      end
+    elseif action == 't' then
+      -- Toggle all files
+      local all_selected = true
+      for _, file in ipairs(state.files) do
+        if not file.selected then
+          all_selected = false
+          break
+        end
+      end
+      for _, file in ipairs(state.files) do
+        file.selected = not all_selected
+      end
     end
+    render_file_selection()
     return
   end
 
@@ -516,7 +534,9 @@ M.start = function()
   state.files = git.get_changed_files()
 
   if #state.files == 0 then
-    vim.api.nvim_err_writeln("No changed files found in the repository")
+    local repo_root = git.get_repository_root()
+    local repo_name = repo_root and vim.fn.fnamemodify(repo_root, ':t') or "unknown"
+    vim.api.nvim_err_writeln("No changed files found in repository: " .. repo_name)
     return
   end
 

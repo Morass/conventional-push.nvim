@@ -184,6 +184,13 @@ This plugin focuses specifically on the **Add → Commit → Push** pipeline wit
 - Neovim 0.5+
 - Git installed and configured
 - Working git repository
+- Terminal with color support (plugin uses cterm colors for visual feedback)
+
+## Important Disclaimers
+
+⚠️ **Hobby Project Warning**: This is a hobby repository created for personal use and learning. While functional, use at your own risk. Always test in a safe environment and ensure you have backups of important work before using this plugin.
+
+⚠️ **Color Compatibility**: This plugin uses cterm colors for highlighting. If you experience visual issues or missing colors, your terminal may not support the color codes used. The plugin should still function, but visual feedback may be limited.
 
 ## Contributing
 
