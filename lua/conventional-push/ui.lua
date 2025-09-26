@@ -57,17 +57,17 @@ local function render_file_selection()
     local status = file.status
     local status_symbol
 
-    if status:match('^A') then
+    if status:sub(1,1) == "A" then
       status_symbol = "+"
-    elseif status:match('^D') or status:match('D$') then
+    elseif status:sub(1,1) == "D" or status:sub(2,2) == "D" then
       status_symbol = "-"
-    elseif status:match('M') then
-      status_symbol = "●"
-    elseif status:match('^R') then
-      status_symbol = "↻"
-    elseif status:match('^C') then
-      status_symbol = "©"
-    elseif status:match('\?') then
+    elseif status:find("M") then
+      status_symbol = "M"
+    elseif status:sub(1,1) == "R" then
+      status_symbol = "R"
+    elseif status:sub(1,1) == "C" then
+      status_symbol = "C"
+    elseif status == "??" then
       status_symbol = "?"
     else
       status_symbol = "?"
@@ -147,11 +147,11 @@ local function render_confirmation()
       elseif status:match('^D') or status:match('D$') then
         status_symbol = "-"
       elseif status:match('M') then
-        status_symbol = "●"
+        status_symbol = "M"
       elseif status:match('^R') then
-        status_symbol = "↻"
+        status_symbol = "R"
       elseif status:match('^C') then
-        status_symbol = "©"
+        status_symbol = "C"
       else
         status_symbol = "?"
       end
