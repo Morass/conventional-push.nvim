@@ -52,7 +52,7 @@ local function render_file_selection()
   }
 
   for _, file in ipairs(state.files) do
-    local select_icon = file.selected and "+" or "x"
+    local select_icon = file.selected and "✓" or "✗"
 
     local status = file.status
     local status_symbol
@@ -98,7 +98,7 @@ local function render_file_selection()
   for i, file in ipairs(state.files) do
     local line_idx = 4 + i
     local select_color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
-    vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 3)
+    vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 5)
 
     local status = file.status
     local staged = status:sub(1,1)
@@ -115,7 +115,7 @@ local function render_file_selection()
       status_color = 'ConventionalPushWhite'
     end
 
-    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 8)
+    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 6, 9)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -165,7 +165,7 @@ local function render_confirmation()
         status_symbol = "[?]"  -- Unknown
       end
 
-      table.insert(lines, "  + " .. status_symbol .. " " .. file.path)
+      table.insert(lines, "  ✓ " .. status_symbol .. " " .. file.path)
     end
   end
 
@@ -187,7 +187,7 @@ local function render_confirmation()
   local line_num = 3
   for _, file in ipairs(state.files) do
     if file.selected then
-      vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
+      vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 5)
 
       local status = file.status
       local staged = status:sub(1,1)
@@ -203,7 +203,7 @@ local function render_confirmation()
       else
         status_color = 'ConventionalPushWhite'
       end
-      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 8)
+      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 6, 9)
 
       line_num = line_num + 1
     end
