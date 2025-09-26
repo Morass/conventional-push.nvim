@@ -15,12 +15,12 @@ All in a single, interactive workflow without leaving Neovim. Perfect for develo
 
 - **Interactive File Selection**: Visual interface to select which changed files to commit
 - **Git Status Indicators**: Visual status indicators with colors for file changes:
-  - `+` (green) for added files
-  - `-` (red) for deleted files
-  - `●` (yellow) for modified files
-  - `↻` (yellow) for renamed files
-  - `©` (yellow) for copied files
-  - `?` (white) for untracked files
+  - `[+]` (green) for staged/added files
+  - `[-]` (red) for deleted files
+  - `[M]` (yellow) for modified files
+  - `[R]` (yellow) for renamed files
+  - `[C]` (yellow) for copied files
+  - `[?]` (white) for untracked files
 - **Conventional Commits**: Built-in support for conventional commit prefixes
 - **User-Friendly Interface**: Navigate with vim-like keybindings
 - **Automatic Push**: Option to push commits immediately after creation
@@ -154,6 +154,19 @@ The default prefixes follow conventional commit standards:
 6. **Message Input**: Allows entering commit message with prefix pre-filled
 7. **Git Operations**: Executes `git add`, `git commit`, and optionally `git push`
 8. **Push Handling**: Automatically handles first-time pushes with upstream setup
+
+## Git Status Reference
+
+The plugin uses git's porcelain format to detect file states:
+
+- **`[+]` Added/Staged**: Files that have been staged with `git add` (ready to commit)
+- **`[M]` Modified**: Files with changes (either staged or unstaged)
+- **`[-]` Deleted**: Files that have been deleted (either staged or unstaged)
+- **`[R]` Renamed**: Files that have been renamed (staged)
+- **`[C]` Copied**: Files that have been copied (staged)
+- **`[?]` Untracked**: New files that git doesn't know about yet
+
+**Note**: Untracked files show `[?]` until you stage them with `git add`, then they become `[+]`.
 
 ## Error Handling
 
