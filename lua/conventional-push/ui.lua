@@ -57,20 +57,24 @@ local function render_file_selection()
     local status = file.status
     local status_symbol
 
-    if status:sub(1,1) == "A" then
-      status_symbol = "+"
-    elseif status:sub(1,1) == "D" or status:sub(2,2) == "D" then
-      status_symbol = "-"
-    elseif status:find("M") then
-      status_symbol = "M"
-    elseif status:sub(1,1) == "R" then
-      status_symbol = "R"
-    elseif status:sub(1,1) == "C" then
-      status_symbol = "C"
+    -- Git status format: XY where X=staged, Y=unstaged
+    local staged = status:sub(1,1)
+    local unstaged = status:sub(2,2)
+
+    if staged == "A" or unstaged == "A" then
+      status_symbol = "[+]"  -- Added
+    elseif staged == "D" or unstaged == "D" then
+      status_symbol = "[-]"  -- Deleted
+    elseif staged == "M" or unstaged == "M" then
+      status_symbol = "[M]"  -- Modified
+    elseif staged == "R" then
+      status_symbol = "[R]"  -- Renamed
+    elseif staged == "C" then
+      status_symbol = "[C]"  -- Copied
     elseif status == "??" then
-      status_symbol = "?"
+      status_symbol = "[?]"  -- Untracked
     else
-      status_symbol = "?"
+      status_symbol = "[?]"  -- Unknown
     end
 
     local line = string.format("  %s %s %s", select_icon, status_symbol, file.path)
@@ -99,18 +103,21 @@ local function render_file_selection()
     vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 3)
 
     local status = file.status
+    local staged = status:sub(1,1)
+    local unstaged = status:sub(2,2)
     local status_color
-    if status:match('^A') then
+
+    if staged == "A" or unstaged == "A" then
       status_color = 'ConventionalPushGreen'
-    elseif status:match('^D') or status:match('D$') then
+    elseif staged == "D" or unstaged == "D" then
       status_color = 'ConventionalPushRed'
-    elseif status:match('M') or status:match('^R') or status:match('^C') then
+    elseif staged == "M" or unstaged == "M" or staged == "R" or staged == "C" then
       status_color = 'ConventionalPushYellow'
     else
       status_color = 'ConventionalPushWhite'
     end
 
-    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 5)
+    vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_idx, 4, 7)
   end
 
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
@@ -142,18 +149,24 @@ local function render_confirmation()
       local status = file.status
       local status_symbol
 
-      if status:match('^A') then
-        status_symbol = "+"
-      elseif status:match('^D') or status:match('D$') then
-        status_symbol = "-"
-      elseif status:match('M') then
-        status_symbol = "M"
-      elseif status:match('^R') then
-        status_symbol = "R"
-      elseif status:match('^C') then
-        status_symbol = "C"
+      -- Git status format: XY where X=staged, Y=unstaged
+      local staged = status:sub(1,1)
+      local unstaged = status:sub(2,2)
+
+      if staged == "A" or unstaged == "A" then
+        status_symbol = "[+]"  -- Added
+      elseif staged == "D" or unstaged == "D" then
+        status_symbol = "[-]"  -- Deleted
+      elseif staged == "M" or unstaged == "M" then
+        status_symbol = "[M]"  -- Modified
+      elseif staged == "R" then
+        status_symbol = "[R]"  -- Renamed
+      elseif staged == "C" then
+        status_symbol = "[C]"  -- Copied
+      elseif status == "??" then
+        status_symbol = "[?]"  -- Untracked
       else
-        status_symbol = "?"
+        status_symbol = "[?]"  -- Unknown
       end
 
       table.insert(lines, "  ✓ " .. status_symbol .. " " .. file.path)
@@ -181,17 +194,20 @@ local function render_confirmation()
       vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
 
       local status = file.status
+      local staged = status:sub(1,1)
+      local unstaged = status:sub(2,2)
       local status_color
-      if status:match('^A') then
+
+      if staged == "A" or unstaged == "A" then
         status_color = 'ConventionalPushGreen'
-      elseif status:match('^D') or status:match('D$') then
+      elseif staged == "D" or unstaged == "D" then
         status_color = 'ConventionalPushRed'
-      elseif status:match('M') or status:match('^R') or status:match('^C') then
+      elseif staged == "M" or unstaged == "M" or staged == "R" or staged == "C" then
         status_color = 'ConventionalPushYellow'
       else
         status_color = 'ConventionalPushWhite'
       end
-      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 5)
+      vim.api.nvim_buf_add_highlight(state.buf, -1, status_color, line_num, 4, 7)
 
       line_num = line_num + 1
     end
