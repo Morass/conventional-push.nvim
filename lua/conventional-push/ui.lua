@@ -36,6 +36,10 @@ local function create_window()
   local win = vim.api.nvim_open_win(buf, true, opts)
   vim.api.nvim_win_set_option(win, 'cursorline', true)
 
+  -- Set up highlight for cursorline with subtle background
+  vim.cmd('highlight ConventionalPushCursorLine ctermbg=236')
+  vim.api.nvim_win_set_option(win, 'winhl', 'CursorLine:ConventionalPushCursorLine')
+
   return buf, win
 end
 
@@ -45,10 +49,10 @@ local function render_file_selection()
     "  Navigate with j/k, Select with 'a', Deselect with 'd', Toggle with 't'",
     "  Press Enter to continue, q to quit",
     "",
-    "  Select All",
-    ""
+    "  Select All"
   }
 
+  -- Add files without blank line
   for _, file in ipairs(state.files) do
     local icon = file.selected and "✓" or "✗"
     local line = string.format("  %s %s", icon, file.path)
@@ -65,6 +69,7 @@ local function render_file_selection()
   vim.api.nvim_set_hl(0, 'ConventionalPushRed', { ctermfg = 196 })
   vim.api.nvim_set_hl(0, 'ConventionalPushYellow', { ctermfg = 226 })
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
 
   -- Light gray for guide text
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 1, 0, -1)
@@ -73,8 +78,9 @@ local function render_file_selection()
   -- Yellow for Select All
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushYellow', 4, 2, -1)
 
+  -- Color file icons
   for i, file in ipairs(state.files) do
-    local line_idx = 6 + i - 1  -- Fixed off-by-one
+    local line_idx = 4 + i  -- Line 5 (index 4) is "Select All", files start at line 6 (index 5)
     local color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
     vim.api.nvim_buf_add_highlight(state.buf, -1, color, line_idx, 2, 3)
   end
@@ -82,7 +88,7 @@ local function render_file_selection()
   vim.api.nvim_buf_set_option(state.buf, 'modifiable', false)
 
   -- Restore cursor position if valid, otherwise set to Select All
-  if current_row >= 5 and current_row <= (6 + #state.files - 1) then
+  if current_row >= 5 and current_row <= (5 + #state.files) then
     vim.api.nvim_win_set_cursor(state.win, {current_row, 0})
   else
     vim.api.nvim_win_set_cursor(state.win, {5, 0})
@@ -118,6 +124,10 @@ local function render_confirmation()
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGreen', { ctermfg = 46 })
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+
+  -- Blue header
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
   -- Add green color to checkmarks
   local line_num = 3
@@ -154,6 +164,10 @@ local function render_prefix_selection()
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+
+  -- Blue header
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
   -- Light gray for instructions
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 3 + #prefixes + 1, 0, -1)
@@ -178,6 +192,10 @@ local function render_message_input()
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+
+  -- Blue header
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
   -- Light gray for instructions
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGray', 5, 0, -1)
@@ -193,7 +211,7 @@ end
 local function render_push_confirmation()
   local lines = {
     "",
-    "  Push?",
+    "  Push to remote?",
     "",
     "  Yes",
     "  No",
@@ -205,6 +223,10 @@ local function render_push_confirmation()
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGreen', { ctermfg = 46 })
   vim.api.nvim_set_hl(0, 'ConventionalPushRed', { ctermfg = 196 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+
+  -- Blue header
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', 3, 2, -1)
   vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushRed', 4, 2, -1)
@@ -238,6 +260,10 @@ local function render_final_summary(push_result)
   vim.api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
 
   vim.api.nvim_set_hl(0, 'ConventionalPushGray', { ctermfg = 245 })
+  vim.api.nvim_set_hl(0, 'ConventionalPushBlue', { ctermfg = 33 })
+
+  -- Blue header
+  vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushBlue', 1, 0, -1)
 
   -- Light gray for instructions
   local last_line = #lines - 1
@@ -260,7 +286,7 @@ local function handle_file_selection_action(action)
     return
   end
 
-  local file_index = row - 5  -- Now correctly maps to file index
+  local file_index = row - 5  -- Row 5 is "Select All", row 6+ are files
   if file_index > 0 and file_index <= #state.files then
     local file = state.files[file_index]
     if action == 'a' then
@@ -413,7 +439,7 @@ local function setup_keymaps()
   map('n', 'j', function()
     if state.mode == "file_selection" then
       local cursor = vim.api.nvim_win_get_cursor(state.win)
-      local max_line = 6 + #state.files - 1  -- Fixed to match new indexing
+      local max_line = 5 + #state.files  -- Select All at 5, files from 6 onwards
       if cursor[1] < max_line then
         vim.api.nvim_win_set_cursor(state.win, {cursor[1] + 1, 0})
       end
