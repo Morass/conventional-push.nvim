@@ -227,4 +227,4 @@ MIT License - see LICENSE file for details.
 ### Push fails
 - Verify you have push permissions to the remote repository
 - Check your git remote configuration
-- Ensure you're authenticated with your git provider
+- Ensure you're authenticated with your git providermodified

@@ -54,20 +54,20 @@ local function render_file_selection()
   for _, file in ipairs(state.files) do
     local select_icon = file.selected and "✓" or "✗"
 
-    local status_char = file.status:sub(1, 1)
+    local status = file.status
     local status_symbol
 
-    if status_char == 'A' then
+    if status:match('^A') then
       status_symbol = "+"
-    elseif status_char == 'D' then
+    elseif status:match('^D') or status:match('D$') then
       status_symbol = "-"
-    elseif status_char == 'M' then
+    elseif status:match('M') then
       status_symbol = "●"
-    elseif status_char == 'R' then
+    elseif status:match('^R') then
       status_symbol = "↻"
-    elseif status_char == 'C' then
+    elseif status:match('^C') then
       status_symbol = "©"
-    elseif status_char == '?' then
+    elseif status:match('\?') then
       status_symbol = "?"
     else
       status_symbol = "?"
@@ -98,13 +98,13 @@ local function render_file_selection()
     local select_color = file.selected and 'ConventionalPushGreen' or 'ConventionalPushRed'
     vim.api.nvim_buf_add_highlight(state.buf, -1, select_color, line_idx, 2, 3)
 
-    local status_char = file.status:sub(1, 1)
+    local status = file.status
     local status_color
-    if status_char == 'A' then
+    if status:match('^A') then
       status_color = 'ConventionalPushGreen'
-    elseif status_char == 'D' then
+    elseif status:match('^D') or status:match('D$') then
       status_color = 'ConventionalPushRed'
-    elseif status_char == 'M' or status_char == 'R' or status_char == 'C' then
+    elseif status:match('M') or status:match('^R') or status:match('^C') then
       status_color = 'ConventionalPushYellow'
     else
       status_color = 'ConventionalPushWhite'
@@ -139,18 +139,18 @@ local function render_confirmation()
 
   for _, file in ipairs(state.files) do
     if file.selected then
-      local status_char = file.status:sub(1, 1)
+      local status = file.status
       local status_symbol
 
-      if status_char == 'A' then
+      if status:match('^A') then
         status_symbol = "+"
-      elseif status_char == 'D' then
+      elseif status:match('^D') or status:match('D$') then
         status_symbol = "-"
-      elseif status_char == 'M' then
+      elseif status:match('M') then
         status_symbol = "●"
-      elseif status_char == 'R' then
+      elseif status:match('^R') then
         status_symbol = "↻"
-      elseif status_char == 'C' then
+      elseif status:match('^C') then
         status_symbol = "©"
       else
         status_symbol = "?"
@@ -180,13 +180,13 @@ local function render_confirmation()
     if file.selected then
       vim.api.nvim_buf_add_highlight(state.buf, -1, 'ConventionalPushGreen', line_num, 2, 3)
 
-      local status_char = file.status:sub(1, 1)
+      local status = file.status
       local status_color
-      if status_char == 'A' then
+      if status:match('^A') then
         status_color = 'ConventionalPushGreen'
-      elseif status_char == 'D' then
+      elseif status:match('^D') or status:match('D$') then
         status_color = 'ConventionalPushRed'
-      elseif status_char == 'M' or status_char == 'R' or status_char == 'C' then
+      elseif status:match('M') or status:match('^R') or status:match('^C') then
         status_color = 'ConventionalPushYellow'
       else
         status_color = 'ConventionalPushWhite'
@@ -333,15 +333,8 @@ local function handle_file_selection_action(action)
         file.selected = false
       end
     elseif action == 't' then
-      local all_selected = true
       for _, file in ipairs(state.files) do
-        if not file.selected then
-          all_selected = false
-          break
-        end
-      end
-      for _, file in ipairs(state.files) do
-        file.selected = not all_selected
+        file.selected = not file.selected
       end
     end
     render_file_selection()
