@@ -2,6 +2,8 @@
 
 A Neovim plugin that provides an interactive interface for making conventional commits with file selection and automatic git push functionality.
 
+![Demo](assets/demo.gif)
+
 ## What is this plugin about?
 
 This plugin is designed to **streamline your git workflow** by providing a simple, visual way to:
