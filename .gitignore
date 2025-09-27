@@ -2,3 +2,4 @@
 *.tmp
 .DS_Store
 .nvim/
+.simple_todos.json
