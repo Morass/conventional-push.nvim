@@ -34,17 +34,15 @@ All in a single, interactive workflow without leaving Neovim. Perfect for develo
 
 ### Using vim-plug
 
-For a private repository, add this to your `~/.vimrc` or `~/.config/nvim/init.vim`:
-
 ```vim
-Plug 'https://github.com/yourusername/conventional-push.nvim'
+Plug 'Morass/conventional-push.nvim'
 ```
 
 ### Using packer.nvim
 
 ```lua
 use {
-  'yourusername/conventional-push.nvim',
+  'Morass/conventional-push.nvim',
   config = function()
     require('conventional-push').setup()
   end
@@ -55,7 +53,7 @@ use {
 
 ```lua
 {
-  'yourusername/conventional-push.nvim',
+  'Morass/conventional-push.nvim',
   config = function()
     require('conventional-push').setup()
   end
